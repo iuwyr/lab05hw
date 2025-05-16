@@ -1,0 +1,51 @@
+name: CMake Build Workflow
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+env:
+  BUILD_TYPE: Debug
+
+jobs:
+  cmake-build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y lcov cmake g++
+
+      - name: Initialize submodules
+        run: git submodule update --init --recursive
+
+      - name: Build banking
+        run: |
+          mkdir -p build
+          cd build
+          cmake .. -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DBUILD_TESTS=ON
+          cmake --build . --config ${{ env.BUILD_TYPE }}
+
+      - name: Run tests
+        run: |
+          cd build
+          ./check
+
+      - name: Run coverage
+        run: |
+          cd build
+          lcov --capture --directory . --output-file coverage.info
+          lcov --remove coverage.info '/usr/*' --output-file coverage.info
+          lcov --list coverage.info
+
+      - name: Upload to Coveralls
+        uses: coverallsapp/github-action@v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path-to-lcov: build/coverage.info
