@@ -22,6 +22,7 @@ public:
     MOCK_METHOD(void, SaveToDataBase, (Account&, Account&, int), (override));
 };
 
+
 TEST(TransactionTest, ErrorOnSameAccount) {
     MockAccount acc(1, 1000);
     TestTransaction txn;
@@ -94,4 +95,35 @@ TEST(TransactionTest, RollbackIfNotEnoughBalance) {
     EXPECT_CALL(txn, SaveToDataBase(_, _, 100));
 
     EXPECT_FALSE(txn.Make(from, to, 100));
+}
+
+
+TEST(AccountTest, GetBalanceReturnsInitialValue) {
+    Account acc(1, 500);
+    EXPECT_EQ(acc.GetBalance(), 500);
+}
+
+TEST(AccountTest, ChangeBalanceThrowsIfUnlocked) {
+    Account acc(1, 500);
+    EXPECT_THROW(acc.ChangeBalance(100), std::runtime_error);
+}
+
+TEST(AccountTest, ChangeBalanceSucceedsWhenLocked) {
+    Account acc(1, 500);
+    acc.Lock();
+    acc.ChangeBalance(250);
+    EXPECT_EQ(acc.GetBalance(), 750);
+}
+
+TEST(AccountTest, LockThrowsIfAlreadyLocked) {
+    Account acc(1, 500);
+    acc.Lock();
+    EXPECT_THROW(acc.Lock(), std::runtime_error);
+}
+
+TEST(AccountTest, UnlockAllowsRelocking) {
+    Account acc(1, 500);
+    acc.Lock();
+    acc.Unlock();
+    EXPECT_NO_THROW(acc.Lock());
 }
