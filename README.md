@@ -1,3 +1,6 @@
+## Итоговое покрытие кода
+[![Coverage Status](https://coveralls.io/repos/github/iuwyr/lab05hw/badge.svg?branch=main)](https://coveralls.io/github/iuwyr/lab05hw?branch=main)
+
 ## Laboratory work V
 
 Данная лабораторная работа посвещена изучению фреймворков для тестирования на примере **GTest**
